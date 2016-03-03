@@ -1,4 +1,4 @@
-class Api::V1::StoresController < BaseController
+class Api::V1::StoresController < Api::V1::BaseController
   before_action :authenticate, except: [:index,:show]
   load_and_authorize_resource
   before_action :set_store, only: [:show, :update, :destroy]
@@ -17,10 +17,10 @@ class Api::V1::StoresController < BaseController
 
   # POST /stores
   def create
-    @store = Store.new(store_params)
+    @store = current_user.stores.build(store_params)
 
     if @store.save
-      render json: @store, status: :created, location: @store
+      render json: @store, status: :created
     else
       render json: @store.errors, status: :unprocessable_entity
     end
