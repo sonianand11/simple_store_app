@@ -1,3 +1,3 @@
 class Product < ApplicationRecord
-  belongs_to :store, dependent: :destroy
+  belongs_to :store
 end
