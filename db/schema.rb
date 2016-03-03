@@ -45,7 +45,6 @@ ActiveRecord::Schema.define(version: 20160227113044) do
     t.string   "email"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string   "api_key"
     t.string   "username"
     t.string   "password"
   end
