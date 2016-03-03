@@ -96,4 +96,37 @@ RSpec.describe Api::V1::StoresController, :type => :request do
 
   end
 
+  describe '#destroy' do
+    it 'destroy store with valid user' do      
+
+      expect {
+        delete api_v1_store_path(store),
+          env: {'HTTP_AUTHORIZATION' => basic_auth(user.username, user.password)}
+      }.to change(Store,:count).by(-1)
+      expect(response).to be_success
+
+    end
+
+    it 'response with access denied' do
+      
+      delete api_v1_store_path(store)
+
+      expect(response.body.strip).to eq('HTTP Basic: Access denied.')
+      expect(response).to be_unauthorized
+    end
+
+    it 'response with unauthrization access message' do
+      
+      another_user = create(:user,username: 'another',password: 'another')
+
+      delete api_v1_store_path(store),          
+        env: {'HTTP_AUTHORIZATION' => basic_auth(another_user.username, another_user.password)}
+      
+      json = parse_response(response.body)
+      expect(json[:error]).to eq('You are not authorized to access this page.')
+    end
+
+  end
+
+
 end
