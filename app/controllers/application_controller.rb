@@ -7,10 +7,17 @@ class ApplicationController < ActionController::API
   end
 
   def authenticate
-    request_http_basic_authentication if !(@current_user = authenticate_with_http_basic { |u, p|  User.authenticate(u,p)})
+    render_unauthorized if !(@current_user = authenticate_with_http_basic { |u, p|  User.authenticate(u,p)})
   end
 
   def current_user
     @current_user
   end
+
+
+  def render_unauthorized(realm = "Application")
+    self.headers["WWW-Authenticate"] = %(Token realm="#{realm.gsub(/"/, "")}")
+    render json: 'Bad credentials', status: :unauthorized
+  end
+  
 end
