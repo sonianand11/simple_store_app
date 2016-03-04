@@ -1,4 +1,6 @@
 class Api::V1::UsersController < Api::V1::BaseController
+  before_action :authenticate
+  load_and_authorize_resource
   before_action :set_user, only: [:show, :update, :destroy]
 
   # GET /users
