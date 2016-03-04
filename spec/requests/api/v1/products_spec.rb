@@ -1,15 +1,17 @@
 require 'rails_helper'
 
-RSpec.describe Api::V1::StoresController, :type => :request do
+RSpec.describe Api::V1::ProductsController, :type => :request do
   
   let!(:store) {FactoryGirl.create(:store)}
+  let!(:product){FactoryGirl.create(:product,store_id: store.id)}
   let(:admin_user) {FactoryGirl.create(:admin_user)}
   let(:user) {FactoryGirl.create(:user)}
 
+
   describe '#index' do
-    it 'sends a list of stores' do  
+    it 'sends a list of products' do  
             
-      get api_v1_stores_path
+      get api_v1_store_products_path(store)
 
       json = parse_response(response.body)
       expect(response).to be_success
@@ -18,39 +20,40 @@ RSpec.describe Api::V1::StoresController, :type => :request do
   end
 
   describe '#show' do
-    it 'returns store information' do
-      get api_v1_store_path(store)
-      json = parse_response(response.body)      
-      expect(json[:id]).to eq(store.id)
-      expect(json[:name]).to eq(store.name)      
+    it 'returns product information' do
+      get api_v1_store_product_path(store,product)
+      json = parse_response(response.body)
+      expect(json[:id]).to eq(product.id)
+      expect(json[:name]).to eq(product.name)      
     end
+
     it 'response with record not found error' do
-      get api_v1_store_path(20)
+      get api_v1_store_product_path(20,20)
       json = parse_response(response.body)
       expect(json[:error]).to eq('record not available')
     end
+
   end
 
   describe '#create' do
-    it 'creates store with valid user' do
+    it 'creates product with valid user' do
       
-      store_attributes = FactoryGirl.attributes_for :store
+      product_attributes = FactoryGirl.attributes_for :product,store_id: store.id
 
-      post api_v1_stores_path,
-        params: {store: store_attributes},
+      post api_v1_store_products_path(store),
+        params: {product: product_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth(user.username, user.password)}
       
       json = parse_response(response.body)      
-      expect(json[:name]).to eq(store_attributes[:name])
-      expect(json[:address]).to eq(store_attributes[:address])
+      expect(json[:name]).to eq(product_attributes[:name])
+      expect(json[:address]).to eq(product_attributes[:address])
     end
 
     it 'response with access denied' do
-      
-      store_attributes = FactoryGirl.attributes_for :store
+      product_attributes = FactoryGirl.attributes_for :product,store_id: store.id
 
-      post api_v1_stores_path,
-        params: {store: store_attributes},
+      post api_v1_store_products_path(store),
+        params: {product: product_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth('wrong_username', 'wrong_password')}
       
       expect(response.body.strip).to eq('Bad credentials')
@@ -60,25 +63,25 @@ RSpec.describe Api::V1::StoresController, :type => :request do
   end
 
   describe '#update' do
-    it 'update store with valid user' do
+    it 'update product with valid user' do
       
-      store_attributes = FactoryGirl.attributes_for :store, name: 'updated name'
+      product_attributes = FactoryGirl.attributes_for :product,store_id: store.id, name: 'updated name'
 
-      put api_v1_store_path(store),
-        params: {store: store_attributes},
+      put api_v1_store_product_path(store,product),
+        params: {product: product_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth(user.username, user.password)}
       
       json = parse_response(response.body)
-      expect(json[:name]).to eq(store_attributes[:name])
-      expect(json[:address]).to eq(store_attributes[:address])
+      expect(json[:name]).to eq(product_attributes[:name])
+      expect(json[:address]).to eq(product_attributes[:address])
     end
 
     it 'response with access denied' do
       
-      store_attributes = FactoryGirl.attributes_for :store, name: 'updated name'
+      product_attributes = FactoryGirl.attributes_for :product,store_id: store.id, name: 'updated name'
 
-      put api_v1_store_path(store),
-        params: {store: store_attributes},
+      put api_v1_store_product_path(store,product),
+        params: {product: product_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth('wrong_username', 'wrong_password')}
       
       expect(response.body.strip).to eq('Bad credentials')
@@ -87,12 +90,12 @@ RSpec.describe Api::V1::StoresController, :type => :request do
 
     it 'response with unauthrization access message' do
       
-      store_attributes = FactoryGirl.attributes_for :store, name: 'updated name'
+      product_attributes = FactoryGirl.attributes_for :product,store_id: store.id, name: 'updated name'
 
       another_user = create(:user,username: 'another',password: 'another')
 
-      put api_v1_store_path(store),
-        params: {store: store_attributes},
+      put api_v1_store_product_path(store,product),
+        params: {product: product_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth(another_user.username, another_user.password)}
       
       json = parse_response(response.body)
@@ -101,20 +104,21 @@ RSpec.describe Api::V1::StoresController, :type => :request do
 
   end
 
+
   describe '#destroy' do
-    it 'destroy store with valid user' do      
+    it 'destroy product with valid user' do      
 
       expect {
-        delete api_v1_store_path(store),
+        delete api_v1_store_product_path(store,product),
           env: {'HTTP_AUTHORIZATION' => basic_auth(user.username, user.password)}
-      }.to change(Store,:count).by(-1)
+      }.to change(Product,:count).by(-1)
       expect(response).to be_success
 
     end
 
     it 'response with access denied' do
       
-      delete api_v1_store_path(store)
+      delete api_v1_store_product_path(store,product)
 
       expect(response.body.strip).to eq('Bad credentials')
       expect(response).to be_unauthorized
@@ -124,7 +128,7 @@ RSpec.describe Api::V1::StoresController, :type => :request do
       
       another_user = create(:user,username: 'another',password: 'another')
 
-      delete api_v1_store_path(store),          
+      delete api_v1_store_product_path(store,product),
         env: {'HTTP_AUTHORIZATION' => basic_auth(another_user.username, another_user.password)}
       
       json = parse_response(response.body)
@@ -132,5 +136,6 @@ RSpec.describe Api::V1::StoresController, :type => :request do
     end
 
   end
-  
+
+
 end

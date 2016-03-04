@@ -6,6 +6,10 @@ class ApplicationController < ActionController::API
     render json: {error: exception.message}
   end
 
+  rescue_from ActiveRecord::RecordNotFound do |exception|
+    render json: {error: 'record not available'}
+  end
+
   def authenticate
     render_unauthorized if !(@current_user = authenticate_with_http_basic { |u, p|  User.authenticate(u,p)})
   end
@@ -17,7 +21,7 @@ class ApplicationController < ActionController::API
 
   def render_unauthorized(realm = "Application")
     self.headers["WWW-Authenticate"] = %(Token realm="#{realm.gsub(/"/, "")}")
-    render json: 'Bad credentials', status: :unauthorized
+    render json: {error: 'Bad credentials'}, status: :unauthorized
   end
   
 end
