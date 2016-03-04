@@ -53,7 +53,8 @@ RSpec.describe Api::V1::StoresController, :type => :request do
         params: {store: store_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth('wrong_username', 'wrong_password')}
       
-      expect(response.body.strip).to eq('Bad credentials')
+      json = parse_response(response.body)
+      expect(json[:error]).to eq('Bad credentials')
       expect(response).to be_unauthorized
     end
 
@@ -81,7 +82,8 @@ RSpec.describe Api::V1::StoresController, :type => :request do
         params: {store: store_attributes},
         env: {'HTTP_AUTHORIZATION' => basic_auth('wrong_username', 'wrong_password')}
       
-      expect(response.body.strip).to eq('Bad credentials')
+      json = parse_response(response.body)
+      expect(json[:error]).to eq('Bad credentials')
       expect(response).to be_unauthorized
     end
 
@@ -116,7 +118,8 @@ RSpec.describe Api::V1::StoresController, :type => :request do
       
       delete api_v1_store_path(store)
 
-      expect(response.body.strip).to eq('Bad credentials')
+      json = parse_response(response.body)
+      expect(json[:error]).to eq('Bad credentials')
       expect(response).to be_unauthorized
     end
 
@@ -132,5 +135,5 @@ RSpec.describe Api::V1::StoresController, :type => :request do
     end
 
   end
-  
+
 end
