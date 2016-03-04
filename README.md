@@ -16,6 +16,10 @@ This is sample application to demonstrate Rails5 api feature.
 
     rails s
 
+**Run test**
+
+    rspec
+
 **CURLs to access application**
 
 *Stores URLs* :
